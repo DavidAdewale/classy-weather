@@ -41,6 +41,7 @@ class App extends React.Component {
   };
 
   fetchWeather = async () => {
+    if (this.state.location.length < 2) return;
     try {
       this.setState({ isLoading: true });
       // 1) Getting location (geocoding)
@@ -71,14 +72,20 @@ class App extends React.Component {
     }
   };
 
-  handleEnter = (e) => {
-    e.preventDefault();
-    this.fetchWeather();
-  };
-
   setLocation = (e) => {
     this.setState({ location: e.target.value });
   };
+
+  componentDidMount() {
+    this.setState({ location: localStorage.getItem('location') || '' });
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.location !== prevState.location) {
+      this.fetchWeather();
+      localStorage.setItem('location', this.state.location);
+    }
+  }
 
   render() {
     return (
@@ -86,7 +93,6 @@ class App extends React.Component {
         <h1>Classy Weather</h1>
         <Input
           location={this.state.location}
-          onEnter={this.handleEnter}
           onChangeLocation={this.setLocation}
         />
 
@@ -111,19 +117,23 @@ export default App;
 class Input extends React.Component {
   render() {
     return (
-      <form onSubmit={this.props.onEnter}>
+      <div>
         <input
           type="text"
           placeholder="Search by location..."
           value={this.props.location}
           onChange={this.props.onChangeLocation}
         />
-      </form>
+      </div>
     );
   }
 }
 
 class Weather extends React.Component {
+  // componentWillUnmount() {
+  //   console.log('Weather will unmount');
+  // }
+
   render() {
     const {
       temperature_2m_max: max,
